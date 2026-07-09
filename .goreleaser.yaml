@@ -1,0 +1,68 @@
+version: 2
+
+project_name: pokemon-cli
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+
+archives:
+  - formats: [tar.gz]
+    format_overrides:
+      - goos: windows
+        formats: [zip]
+
+checksum:
+  name_template: "checksums.txt"
+
+changelog:
+  groups:
+    - title: Features
+      regexp: '^.*?feat(\([\w]+\))??!?:.+$'
+      order: 0
+    - title: "Bug fixes"
+      regexp: '^.*?fix(\([\w]+\))??!?:.+$'
+      order: 1
+    - title: Others
+      order: 999
+
+# `brews` (classic Homebrew Formula pipe) is deprecated by goreleaser in
+# favor of `homebrew_casks` (https://goreleaser.com/deprecations#brews).
+homebrew_casks:
+  - repository:
+      owner: GyeongHoKim
+      name: homebrew-tap
+    homepage: "https://github.com/GyeongHoKim/pokemon-cli"
+    description: "Pikachu running around your terminal"
+    binaries:
+      - pokemon-cli
+    commit_author:
+      name: goreleaserbot
+      email: bot@goreleaser.com
+    hooks:
+      post:
+        install: |
+          if OS.mac?
+            system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{staged_path}/pokemon-cli"]
+          end
+
+scoops:
+  - repository:
+      owner: GyeongHoKim
+      name: scoop-bucket
+    homepage: "https://github.com/GyeongHoKim/pokemon-cli"
+    description: "Pikachu running around your terminal"
+    commit_author:
+      name: goreleaserbot
+      email: bot@goreleaser.com

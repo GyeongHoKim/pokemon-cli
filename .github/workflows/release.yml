@@ -1,0 +1,58 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: jdx/mise-action@v2
+        with:
+          install: true
+
+      # Builds binaries + archives, publishes the GitHub Release, and pushes
+      # the Homebrew formula / Scoop manifest to the separate tap/bucket repos.
+      - uses: goreleaser/goreleaser-action@v6
+        with:
+          version: '~> v2'
+          args: release --clean
+        env:
+          GITHUB_TOKEN: ${{ secrets.TAP_GITHUB_TOKEN }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: latest
+          registry-url: 'https://registry.npmjs.org'
+
+      # Ensure an OIDC-capable npm CLI (trusted publishing needs >=11.5.1).
+      - run: npm install -g npm@latest
+
+      - run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          node scripts/prepare-npm-release.mjs "$VERSION"
+
+      # Trusted Publishing (OIDC) — no NPM_TOKEN. Each package below must
+      # already have a Trusted Publisher configured on npmjs.com pointing at
+      # this repo + this workflow file (see README / plan prerequisites).
+      - name: publish platform packages
+        run: |
+          set -euo pipefail
+          for dir in npm/platforms/*/; do
+            (cd "$dir" && npm publish --access public)
+          done
+
+      - name: publish wrapper package
+        run: |
+          cd npm/pokemon-cli
+          npm publish --access public

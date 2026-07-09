@@ -1,0 +1,10 @@
+[tools]
+go = "latest"
+node = "latest"
+just = "latest"
+golangci-lint = "latest"
+goreleaser = "latest"
+git-cliff = "latest"
+
+[env]
+_.path = ["./node_modules/.bin"]

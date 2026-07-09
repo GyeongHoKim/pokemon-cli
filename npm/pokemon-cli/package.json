@@ -1,0 +1,32 @@
+{
+  "name": "@gyeonghokim/pokemon-cli",
+  "version": "0.0.0",
+  "description": "Pikachu running around your terminal",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GyeongHoKim/pokemon-cli.git"
+  },
+  "bin": {
+    "pokemon-cli": "bin.js"
+  },
+  "files": [
+    "bin.js"
+  ],
+  "os": [
+    "darwin",
+    "linux",
+    "win32"
+  ],
+  "cpu": [
+    "x64",
+    "arm64"
+  ],
+  "optionalDependencies": {
+    "@gyeonghokim/pokemon-cli-darwin-arm64": "0.0.0",
+    "@gyeonghokim/pokemon-cli-darwin-amd64": "0.0.0",
+    "@gyeonghokim/pokemon-cli-linux-amd64": "0.0.0",
+    "@gyeonghokim/pokemon-cli-linux-arm64": "0.0.0",
+    "@gyeonghokim/pokemon-cli-windows-amd64": "0.0.0"
+  }
+}

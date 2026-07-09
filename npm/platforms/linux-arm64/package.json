@@ -1,0 +1,19 @@
+{
+  "name": "@gyeonghokim/pokemon-cli-linux-arm64",
+  "version": "0.0.0",
+  "description": "pokemon-cli prebuilt binary for linux/arm64",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GyeongHoKim/pokemon-cli.git"
+  },
+  "os": [
+    "linux"
+  ],
+  "cpu": [
+    "arm64"
+  ],
+  "files": [
+    "pokemon-cli"
+  ]
+}

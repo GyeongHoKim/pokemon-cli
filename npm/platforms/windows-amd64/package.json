@@ -1,0 +1,19 @@
+{
+  "name": "@gyeonghokim/pokemon-cli-windows-amd64",
+  "version": "0.0.0",
+  "description": "pokemon-cli prebuilt binary for windows/amd64",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GyeongHoKim/pokemon-cli.git"
+  },
+  "os": [
+    "win32"
+  ],
+  "cpu": [
+    "x64"
+  ],
+  "files": [
+    "pokemon-cli.exe"
+  ]
+}
