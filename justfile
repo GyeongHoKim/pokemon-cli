@@ -22,6 +22,12 @@ lint-fix:
 tidy:
     go mod tidy
 
+generate-sprites:
+    go run ./tools/sprite-gen
+
+sprite-preview POKEMON="pikachu":
+    go run ./tools/sprite-gen -preview {{POKEMON}}
+
 ci: fmt lint test
 
 changelog:
