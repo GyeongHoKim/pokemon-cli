@@ -2,10 +2,10 @@ default:
     just --list
 
 build:
-    go build -o bin/pokemon-cli .
+    go build -o bin/pokemon-cli ./cmd/pokemon-cli
 
 run:
-    go run .
+    go run ./cmd/pokemon-cli
 
 test:
     go test ./...
