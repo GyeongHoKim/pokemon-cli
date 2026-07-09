@@ -4,7 +4,7 @@ endorsed by, or sponsored by Nintendo, Creatures Inc., or GAME FREAK inc.
 This repository embeds Pokémon sprite artwork (internal/sprite/data/sprites.gob.gz),
 sourced from the community-maintained PokeAPI/sprites project
 (https://github.com/PokeAPI/sprites) at a pinned commit — see the SHA recorded
-in tools/sprite-gen/fetch.go. That artwork is copyrighted by
+in cmd/sprite-gen/fetch.go. That artwork is copyrighted by
 Nintendo/Creatures Inc./GAME FREAK inc. Its inclusion here follows the same
 long-standing community norm as other open-source terminal Pokémon tools
 (e.g. krabby, pokeget-rs).

@@ -19,8 +19,12 @@ const pinnedSpritesSHA = "bf4c47ac82c33b330e33d98b8882d1cedb2f53e7"
 
 const (
 	speciesListURL = "https://pokeapi.co/api/v2/pokemon-species?limit=1025"
-	battleURLFmt   = "https://raw.githubusercontent.com/PokeAPI/sprites/" + pinnedSpritesSHA + "/sprites/pokemon/%d.png"
-	iconURLFmt     = "https://raw.githubusercontent.com/PokeAPI/sprites/" + pinnedSpritesSHA + "/sprites/pokemon/other/showdown/%d.gif"
+	// animatedURLFmt is Pokémon Showdown's animated battle sprite: real
+	// multi-frame animation, traded off against lower art fidelity than the
+	// official static battle sprite. Not every species has one (~1004/1025);
+	// species without it are excluded from generation entirely, not
+	// fallen back to a static image.
+	animatedURLFmt = "https://raw.githubusercontent.com/PokeAPI/sprites/" + pinnedSpritesSHA + "/sprites/pokemon/other/showdown/%d.gif"
 
 	cacheDir     = ".cache/sprite-src"
 	fetchWorkers = 8
@@ -78,17 +82,16 @@ func idFromSpeciesURL(u string) (int, error) {
 	return strconv.Atoi(trimmed[idx+1:])
 }
 
-// fetchedSprite is the raw downloaded bytes for one species' pose sources.
-// Icon is nil when no Showdown sprite exists for this id (ok=false), in
-// which case the caller falls back to reusing the Battle pose.
+// fetchedSprite is the raw downloaded animated-GIF bytes for one species.
+// GIF is nil when the species has no Showdown animated sprite, in which
+// case the caller excludes it from generation entirely.
 type fetchedSprite struct {
-	ID     int
-	Battle []byte
-	Icon   []byte // nil if unavailable
+	ID  int
+	GIF []byte // nil if unavailable
 }
 
-// fetchAll downloads (or reads from disk cache) both pose sources for every
-// entry, using a bounded worker pool.
+// fetchAll downloads (or reads from disk cache) the animated sprite for
+// every entry, using a bounded worker pool.
 func fetchAll(client *http.Client, entries []dexEntry) ([]fetchedSprite, error) {
 	if err := os.MkdirAll(cacheDir, 0o755); err != nil {
 		return nil, fmt.Errorf("create cache dir: %w", err)
@@ -106,19 +109,13 @@ func fetchAll(client *http.Client, entries []dexEntry) ([]fetchedSprite, error) 
 			sem <- struct{}{}
 			defer func() { <-sem }()
 
-			battle, err := fetchCached(client, fmt.Sprintf(battleURLFmt, e.ID), filepath.Join(cacheDir, fmt.Sprintf("%d-battle.png", e.ID)))
+			gifData, err := fetchCachedOptional(client, fmt.Sprintf(animatedURLFmt, e.ID), filepath.Join(cacheDir, fmt.Sprintf("%d-animated.gif", e.ID)))
 			if err != nil {
-				errs[i] = fmt.Errorf("species %d (%s) battle sprite: %w", e.ID, e.Name, err)
+				errs[i] = fmt.Errorf("species %d (%s) animated sprite: %w", e.ID, e.Name, err)
 				return
 			}
 
-			icon, err := fetchCachedOptional(client, fmt.Sprintf(iconURLFmt, e.ID), filepath.Join(cacheDir, fmt.Sprintf("%d-icon.gif", e.ID)))
-			if err != nil {
-				errs[i] = fmt.Errorf("species %d (%s) icon sprite: %w", e.ID, e.Name, err)
-				return
-			}
-
-			results[i] = fetchedSprite{ID: e.ID, Battle: battle, Icon: icon}
+			results[i] = fetchedSprite{ID: e.ID, GIF: gifData}
 		}(i, e)
 	}
 	wg.Wait()
@@ -131,35 +128,9 @@ func fetchAll(client *http.Client, entries []dexEntry) ([]fetchedSprite, error) 
 	return results, nil
 }
 
-// fetchCached fetches url, caching bytes at cachePath. A non-200 response is
-// a hard error (the battle pose must exist for every species).
-func fetchCached(client *http.Client, url, cachePath string) ([]byte, error) {
-	if data, err := os.ReadFile(cachePath); err == nil {
-		return data, nil
-	}
-
-	var lastErr error
-	for attempt := 0; attempt <= fetchRetries; attempt++ {
-		data, status, err := httpGet(client, url)
-		if err != nil {
-			lastErr = err
-			continue
-		}
-		if status != http.StatusOK {
-			lastErr = fmt.Errorf("unexpected status %d for %s", status, url)
-			continue
-		}
-		if err := os.WriteFile(cachePath, data, 0o644); err != nil {
-			return nil, fmt.Errorf("write cache %s: %w", cachePath, err)
-		}
-		return data, nil
-	}
-	return nil, lastErr
-}
-
-// fetchCachedOptional is like fetchCached but treats HTTP 404 as "not
-// available" (nil, nil) rather than an error, since ~2% of species have no
-// Showdown icon sprite and must fall back to the battle pose instead.
+// fetchCachedOptional fetches url, caching bytes at cachePath, and treats
+// HTTP 404 as "not available" (nil, nil) rather than an error, since not
+// every species has an animated sprite.
 func fetchCachedOptional(client *http.Client, url, cachePath string) ([]byte, error) {
 	const missingMarker = ".missing"
 	if _, err := os.Stat(cachePath + missingMarker); err == nil {

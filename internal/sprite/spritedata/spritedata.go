@@ -1,4 +1,4 @@
-// Package spritedata defines the wire format shared between tools/sprite-gen
+// Package spritedata defines the wire format shared between cmd/sprite-gen
 // (which produces it) and internal/sprite (which embeds and decodes it).
 package spritedata
 
@@ -13,10 +13,10 @@ type PixelGrid struct {
 	Indices       []uint8
 }
 
-// SpeciesSprites holds the two poses rendered for a single species.
+// SpeciesSprites holds the (subsampled) animation frame sequence for a
+// single species, composited from its source animated GIF.
 type SpeciesSprites struct {
-	Icon   PixelGrid
-	Battle PixelGrid
+	Frames []PixelGrid
 }
 
 // Bundle is the full embedded dataset, keyed by national Pokédex id.

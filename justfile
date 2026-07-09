@@ -23,10 +23,10 @@ tidy:
     go mod tidy
 
 generate-sprites:
-    go run ./tools/sprite-gen
+    go run ./cmd/sprite-gen
 
 sprite-preview POKEMON="pikachu":
-    go run ./tools/sprite-gen -preview {{POKEMON}}
+    go run ./cmd/sprite-gen -preview {{POKEMON}}
 
 ci: fmt lint test
 

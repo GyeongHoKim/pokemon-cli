@@ -8,7 +8,7 @@ import (
 
 func TestResolveAndRenderKnownSpecies(t *testing.T) {
 	names := []string{
-		"pikachu", "charizard", "mr-mime", "nidoran-f", "ho-oh", "ogerpon", "walking-wake",
+		"pikachu", "charizard", "mr-mime", "nidoran-f", "ho-oh", "walking-wake",
 	}
 	for _, name := range names {
 		t.Run(name, func(t *testing.T) {
@@ -22,16 +22,19 @@ func TestResolveAndRenderKnownSpecies(t *testing.T) {
 				t.Fatalf("Load(%v): %v", key, err)
 			}
 
-			for _, pose := range []Pose{PoseIcon, PoseBattle} {
-				out := s.Render(pose)
+			if s.FrameCount() == 0 {
+				t.Fatal("FrameCount() = 0, want at least 1")
+			}
+			for frame := 0; frame < s.FrameCount(); frame++ {
+				out := s.Render(frame)
 				if out == "" {
-					t.Fatalf("Render(pose=%v) returned empty string", pose)
+					t.Fatalf("Render(%d) returned empty string", frame)
 				}
 				if !strings.Contains(out, "\x1b[") {
-					t.Errorf("Render(pose=%v) missing ANSI escape sequences: %q", pose, out)
+					t.Errorf("Render(%d) missing ANSI escape sequences: %q", frame, out)
 				}
 				if !strings.Contains(out, "\n") {
-					t.Errorf("Render(pose=%v) missing newline (not multi-row): %q", pose, out)
+					t.Errorf("Render(%d) missing newline (not multi-row): %q", frame, out)
 				}
 			}
 		})
@@ -63,9 +66,35 @@ func TestResolveUnknownSpecies(t *testing.T) {
 	}
 }
 
-func TestRegistryCoversFullDex(t *testing.T) {
-	const minExpected = 1000 // full national dex is 1025; leave slack for future gens
+func TestRegistryCoversAnimatedDex(t *testing.T) {
+	const minExpected = 1000 // ~1004/1025 species have an animated source sprite; leave slack
 	if len(nameToKey) < minExpected {
 		t.Errorf("nameToKey has %d entries, want at least %d (regeneration may be broken)", len(nameToKey), minExpected)
+	}
+	if len(keyToSlug) != len(nameToKey) {
+		t.Errorf("keyToSlug has %d entries, nameToKey has %d; expected them to cover the same species", len(keyToSlug), len(nameToKey))
+	}
+}
+
+func TestRandom(t *testing.T) {
+	key, slug := Random()
+	if key == 0 {
+		t.Fatal("Random() returned zero Key")
+	}
+	if slug == "" {
+		t.Fatal("Random() returned empty slug")
+	}
+	if _, err := Load(key); err != nil {
+		t.Errorf("Load(Random() key %v): %v", key, err)
+	}
+}
+
+func TestRandomExceptNeverImmediatelyRepeats(t *testing.T) {
+	key, _ := Random()
+	for i := 0; i < 200; i++ {
+		got, _ := RandomExcept(key)
+		if got == key {
+			t.Fatalf("RandomExcept(%v) returned the excluded key on attempt %d", key, i)
+		}
 	}
 }
