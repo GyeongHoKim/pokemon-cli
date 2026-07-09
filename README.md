@@ -1,8 +1,8 @@
 # pokemon-cli
 
-A Pokémon companion for your terminal — pick any of the 1,025 species and watch it sit, react, and talk, in a TUI built with [bubbletea](https://github.com/charmbracelet/bubbletea) and [lipgloss](https://github.com/charmbracelet/lipgloss).
+A Pokémon companion for your terminal — a random species animates continuously in place, and every so often wanders off and is replaced by a different one, announced with a speech bubble. Built with [bubbletea](https://github.com/charmbracelet/bubbletea) and [lipgloss](https://github.com/charmbracelet/lipgloss).
 
-> Status: the sprite pipeline (`internal/sprite`) is implemented — every species resolves to real terminal-renderable art. The bubbletea UI/state machine itself isn't wired up yet (`main.go` is still a placeholder).
+> Status: fully implemented.
 
 ## Install
 
@@ -24,7 +24,7 @@ scoop install pokemon-cli
 pokemon-cli
 ```
 
-Resize your terminal — Pikachu reacts. Requires a truecolor-capable terminal for the best visuals (most modern terminal emulators support this out of the box).
+A random species appears, animates continuously, and sits centered in the terminal (reacting to resizing). Every 8-20 seconds it's replaced by a different random species, announced with a speech bubble. Press `q` or `ctrl+c` to quit. Requires a truecolor-capable terminal for the best visuals (most modern terminal emulators support this out of the box).
 
 ## Development
 
@@ -38,7 +38,7 @@ Common tasks (see `justfile`):
 
 ```bash
 just          # list all tasks
-just run      # go run .
+just run      # go run ./cmd/pokemon-cli
 just build    # build a local binary into bin/
 just test     # go test ./...
 just fmt      # golangci-lint fmt
@@ -47,7 +47,7 @@ just ci       # fmt + lint + test, same as CI
 just release-dry  # local goreleaser snapshot build, no publishing
 
 just generate-sprites     # regenerate internal/sprite's embedded dataset from PokeAPI/sprites
-just sprite-preview eevee # print a species' rendered sprite art to the terminal
+just sprite-preview eevee # animate a species' rendered sprite frames in the terminal
 ```
 
 ### Commit messages

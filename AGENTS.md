@@ -8,7 +8,14 @@ Any time you modify a file in this repo, before considering the task done you MU
 
 ## What this is
 
-`pokemon-cli` (`@gyeonghokim/pokemon-cli` on npm) is a terminal app, built with [bubbletea](https://github.com/charmbracelet/bubbletea)/[lipgloss](https://github.com/charmbracelet/lipgloss), that animates Pikachu running around and resting in the user's terminal, reacting to terminal resize. **As of now only the project scaffolding/tooling exists** — `main.go` is a placeholder (`package main; func main() { fmt.Println(...) }`). The bubbletea state machine, sprite rendering, and resize handling are not implemented yet.
+`pokemon-cli` (`@gyeonghokim/pokemon-cli` on npm) is a terminal app, built with [bubbletea](https://github.com/charmbracelet/bubbletea)/[lipgloss](https://github.com/charmbracelet/lipgloss) **v2** (note the `charm.land/...` module paths, not the older `github.com/charmbracelet/...` v1 ones), that shows a *randomly chosen* Pokémon species as a terminal companion: it animates continuously in place with its real sprite frames, centered in the terminal (reacting to resize), and every 8-20s is replaced by a *different* random species, announced via a speech bubble with self-authored dialogue. There is no `--pokemon` flag or other species selection — rotation is fully automatic.
+
+Sprite frames come from Pokémon Showdown's animated battle sprites, not the official static battle art — a deliberate fidelity-for-real-animation tradeoff (official sprites are single static images with no frame data). Only species with a working animated source (~1004/1025) are included; the ~21 without one (recent Gen 9 additions) are excluded from generation entirely, not shown as static fallbacks.
+
+- `internal/sprite`: resolves species to embedded, terminal-renderable animated ANSI art, and exposes `Random`/`RandomExcept` for species rotation (see `cmd/sprite-gen` for the generation pipeline — including disposal-aware GIF frame compositing — and `/NOTICE` for sprite asset attribution).
+- `internal/pet`: the bubbletea `Model` (continuous frame-animation timer + independent species-swap/bubble-hide timer, resize handling, view composition).
+- `internal/dialogue`: self-authored, species-agnostic "a new companion arrived" speech-bubble line templates (not copyrighted Pokédex/in-game flavor text).
+- `cmd/pokemon-cli`: the actual binary's `main.go` (minimal — just wires `pet.New()` into a `tea.Program`).
 
 ## Commands
 
@@ -17,19 +24,21 @@ Toolchain (go, node, just, golangci-lint, goreleaser, git-cliff) is pinned via [
 All day-to-day commands go through `justfile`, not raw `go`/`golangci-lint` invocations:
 
 ```bash
-just run          # go run .
-just build        # go build -o bin/pokemon-cli .
+just run          # go run ./cmd/pokemon-cli
+just build        # go build -o bin/pokemon-cli ./cmd/pokemon-cli
 just test         # go test ./...
 just fmt          # golangci-lint fmt (gofmt + goimports)
 just lint         # golangci-lint run
 just lint-fix      # golangci-lint run --fix
 just tidy         # go mod tidy
 just ci           # fmt + lint + test — mirrors what CI runs, run this before pushing
+just generate-sprites     # regenerate internal/sprite's embedded dataset from PokeAPI/sprites
+just sprite-preview <name> # animate a species' rendered sprite frames in the terminal
 just changelog    # git-cliff --output CHANGELOG.md (local preview)
 just release-dry  # goreleaser release --snapshot --clean --skip=publish — full local release build, no publishing
 ```
 
-To run a single Go test: `go test ./... -run TestName` (no test files exist yet).
+To run a single Go test: `go test ./... -run TestName`.
 
 ## Commit conventions
 
