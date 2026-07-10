@@ -64,6 +64,7 @@ scoops:
       name: scoop-bucket
     homepage: "https://github.com/GyeongHoKim/pokemon-cli"
     description: "Pikachu running around your terminal"
+    license: MIT
     commit_author:
       name: goreleaserbot
       email: bot@goreleaser.com
