@@ -1,5 +1,9 @@
 # pokemon-cli
 
+<p align="center">
+  <img src="thumbnail.png" alt="pokemon-cli thumbnail">
+</p>
+
 A Pokémon companion for your terminal — a random species animates continuously in place, and every so often wanders off and is replaced by a different one, announced with a speech bubble. Built with [bubbletea](https://github.com/charmbracelet/bubbletea) and [lipgloss](https://github.com/charmbracelet/lipgloss).
 
 > Status: fully implemented.
